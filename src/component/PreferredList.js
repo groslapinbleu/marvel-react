@@ -1,13 +1,12 @@
 import React, { useContext } from 'react';
-import { List, Divider } from 'antd';
+import { List, Divider, Popover, Avatar } from 'antd';
 import DataContext from './DataContext'
 
 
 const PreferredList = () => {
     const { selectedData } = useContext(DataContext)
-    const handleClick = () => {
-        console.log('click')
-    }
+
+    
     console.log(selectedData)
     return (
         <>
@@ -16,7 +15,7 @@ const PreferredList = () => {
                     size="small"
                     bordered
                     dataSource={selectedData}
-                    renderItem={item => <List.Item onClick={handleClick}>{item.name}</List.Item>}
+                    renderItem={item => <List.Item><Popover content={<Avatar src={item.thumbnail}/>} title={item.name} trigger="hover">{item.name}</Popover></List.Item>}
                 />
         </>
     );

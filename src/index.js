@@ -12,12 +12,16 @@ import {
 } from 'react-router-dom'
 import PreferredList from './component/PreferredList'
 
-import defaultContext from './component/defaultContext'
+// import defaultContext from './component/defaultContext'
 import DataContext from './component/DataContext'
 
 
 const Root = () => (
-  <DataContext.Provider value={defaultContext}>
+  <DataContext.Provider value={
+    {
+      data: [],
+      selectedData: [],
+    }}>
     <Router>
       <Switch>
         <Route exact path='/' component={App} />

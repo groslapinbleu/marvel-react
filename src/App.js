@@ -6,14 +6,35 @@ import DataContext from './component/DataContext'
 import {
   SmileOutlined,
 } from '@ant-design/icons';
+import { getAllCharactersAPI } from './service/API'
+import Character from './model/Character'
 
 class App extends Component {
   state = {
     goToFavorites: false,
-    refreshPage: false
+    refreshPage: false,
+    dataLoadedFromAPI: false
   }
 
-  static myContext = DataContext
+  async componentDidMount() {
+    if (!this.state.dataLoadedFromAPI) {
+      try {
+        const { data } = this.context
+
+        const allChars = await getAllCharactersAPI(0, (data) => console.log(data))
+        // console.log(`allChars = ${allChars}`)
+        const dataset = allChars.data
+        // console.log(`dataset = ${dataset}`)
+        const results = dataset.results
+        // console.log(`results = ${results}`)
+        results.map(character => console.log(character))
+        results.forEach((c) => data.push(new Character(c.id, c.name, c.description, `${c.thumbnail.path}.${c.thumbnail.extension}`)))
+        this.setState({ dataLoadedFromAPI: true })
+      } catch (error) {
+        console.log(error)
+      }
+    }
+  }
 
   goToFavorites = event => {
     console.log('click')
@@ -52,7 +73,7 @@ class App extends Component {
           dataSource={data}
           renderItem={item => {
             const foundIndex = selectedData.findIndex(element => element.id === item.id)
-            
+
             return <List.Item
               key={item.id}
               actions={[
