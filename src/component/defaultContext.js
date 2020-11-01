@@ -11,6 +11,8 @@ const defaultContext = {
     new Character('1', 'hulk', 'all green', null),
 
   ],
+  dataLoadedOnceFromAPI: false,
+  offset: 0
 }
 
 

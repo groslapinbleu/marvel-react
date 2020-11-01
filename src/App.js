@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-import { List, Divider, Button, Avatar } from 'antd';
+import { List, Divider, Button, Avatar, Spin } from 'antd';
 import { Redirect } from 'react-router-dom'
 import DataContext from './component/DataContext'
 import {
@@ -10,36 +10,57 @@ import { getAllCharactersAPI } from './service/API'
 import Character from './model/Character'
 
 class App extends Component {
-  state = {
-    goToFavorites: false,
-    refreshPage: false,
-    dataLoadedFromAPI: false
+  constructor(props) {
+    super(props)
+    this.state = {
+      goToFavorites: false,
+      refreshPage: false,
+      isLoading: false
+    }
+    this.goToFavorites = this.goToFavorites.bind(this);
+    this.getMoreData = this.getMoreData.bind(this);
+    this.handleIconClick = this.handleIconClick.bind(this);
   }
 
-  async componentDidMount() {
-    if (!this.state.dataLoadedFromAPI) {
-      try {
-        const { data } = this.context
+  // retrieve data
+  async getData() {
+    this.setState({ isLoading: true })
+    try {
+      const { data } = this.context
 
-        const allChars = await getAllCharactersAPI(0, (data) => console.log(data))
-        // console.log(`allChars = ${allChars}`)
-        const dataset = allChars.data
-        // console.log(`dataset = ${dataset}`)
-        const results = dataset.results
-        // console.log(`results = ${results}`)
-        results.map(character => console.log(character))
-        results.forEach((c) => data.push(new Character(c.id, c.name, c.description, `${c.thumbnail.path}.${c.thumbnail.extension}`)))
-        this.setState({ dataLoadedFromAPI: true })
-      } catch (error) {
-        console.log(error)
-      }
+      const allChars = await getAllCharactersAPI(this.context.offset, (data) => console.log(data))
+      // console.log(`allChars = ${allChars}`)
+      const dataset = allChars.data
+      // console.log(`dataset = ${dataset}`)
+      const results = dataset.results
+      // console.log(`results = ${results}`)
+      results.map(character => console.log(character))
+      results.forEach((c) => data.push(new Character(c.id, c.name, c.description, `${c.thumbnail.path}.${c.thumbnail.extension}`)))
+      this.setState({ refreshPage: true })
+      this.context.dataLoadedOnceFromAPI = true
+      this.context.offset = this.context.offset + results.length
+      this.setState({ isLoading: false })
+    } catch (error) {
+      console.log(error)
     }
   }
 
+  // get initial data from MArvel API when component is mounted
+  async componentDidMount() {
+    if (!this.context.dataLoadedOnceFromAPI) {
+      await this.getData()
+    }
+  }
+
+
   goToFavorites = event => {
-    console.log('click')
     event.preventDefault()
     this.setState({ goToFavorites: true })
+  }
+
+  async getMoreData() {
+    console.log('getMoreData')
+    await this.getData()
   }
 
   handleIconClick = (event, item) => {
@@ -60,7 +81,7 @@ class App extends Component {
       return <Redirect push to={'favorites'} />
     }
     const { data, selectedData } = this.context
-    console.log(`data = ${data}, selectedData = ${selectedData}`)
+    // console.log(`data = ${data}, selectedData = ${selectedData}`)
 
     return (
 
@@ -68,7 +89,14 @@ class App extends Component {
         <Divider orientation="center">Marvel App</Divider>
         <List
           size="small"
-          header={<div><Button onClick={this.goToFavorites} type='primary'>Favorites</Button></div>}
+          header={<div>
+            <Button onClick={this.goToFavorites} type='primary'>Favorites</Button>
+          </div>}
+          footer={<div>
+            <Button onClick={this.goToFavorites} type='primary'>Favorites</Button>
+            <Button onClick={this.getMoreData} type='primary'>Get More Data</Button>
+            {this.state.isLoading ?<Spin size="large" /> : null}
+          </div>}
           bordered
           dataSource={data}
           renderItem={item => {

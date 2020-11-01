@@ -21,6 +21,8 @@ const Root = () => (
     {
       data: [],
       selectedData: [],
+      dataLoadedOnceFromAPI: false,
+      offset: 0
     }}>
     <Router>
       <Switch>
