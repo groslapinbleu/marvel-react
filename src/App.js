@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-import { List, Divider, Button, Avatar, Spin } from 'antd';
+import { List, Divider, Button, Avatar, Layout, BackTop, Space } from 'antd';
 import { Redirect } from 'react-router-dom'
 import DataContext from './component/DataContext'
 import {
@@ -8,6 +8,17 @@ import {
 } from '@ant-design/icons';
 import { getAllCharactersAPI } from './service/API'
 import Character from './model/Character'
+const { Header, Footer, Content } = Layout
+const style = {
+  height: 40,
+  width: 40,
+  lineHeight: '40px',
+  borderRadius: 4,
+  backgroundColor: '#1088e9',
+  color: '#fff',
+  textAlign: 'center',
+  fontSize: 14,
+}
 
 class App extends Component {
   constructor(props) {
@@ -15,14 +26,16 @@ class App extends Component {
     this.state = {
       goToFavorites: false,
       refreshPage: false,
-      isLoading: false
+      isLoading: false,
+      searchInput: ''
     }
     this.goToFavorites = this.goToFavorites.bind(this);
     this.getMoreData = this.getMoreData.bind(this);
     this.handleIconClick = this.handleIconClick.bind(this);
+    this.handleInput = this.handleInput.bind(this);
   }
 
-  // retrieve data
+  // retrieve data from API
   async getData() {
     this.setState({ isLoading: true })
     try {
@@ -52,7 +65,7 @@ class App extends Component {
     }
   }
 
-
+  // sets state so that we move to favorites page after refresh
   goToFavorites = event => {
     event.preventDefault()
     this.setState({ goToFavorites: true })
@@ -76,6 +89,11 @@ class App extends Component {
     }
   }
 
+  // update search field value
+  handleInput = (event) => {
+    this.setState({ searchInput: event.target.value })
+  }
+
   render() {
     if (this.state.goToFavorites) {
       return <Redirect push to={'favorites'} />
@@ -83,47 +101,65 @@ class App extends Component {
     const { data, selectedData } = this.context
     // console.log(`data = ${data}, selectedData = ${selectedData}`)
 
+
     return (
 
-      <>
-        <Divider orientation="center">Marvel App</Divider>
-        <List
-          size="small"
-          header={<div>
-            <Button onClick={this.goToFavorites} type='primary'>Favorites</Button>
-          </div>}
-          footer={<div>
-            <Button onClick={this.goToFavorites} type='primary'>Favorites</Button>
-            <Button onClick={this.getMoreData} type='primary'>Get More Data</Button>
-            {this.state.isLoading ?<Spin size="large" /> : null}
-          </div>}
-          bordered
-          dataSource={data}
-          renderItem={item => {
-            const foundIndex = selectedData.findIndex(element => element.id === item.id)
 
-            return <List.Item
-              key={item.id}
-              actions={[
-                <SmileOutlined style={{ color: foundIndex > -1 ? 'red' : 'black' }} />
-              ]}
-              onClick={(event) => this.handleIconClick(event, item)}>
+      <Layout>
+        <Content>
+          <Divider orientation="center">Marvel App</Divider>
+          <List
+            size="small"
+            header={<Space>
+              <Button onClick={this.goToFavorites} type='primary'>Favorites</Button>
+              {this.state.isLoading
+                ? <Button type='primary' loading>Loading Data</Button>
+                : <Button onClick={this.getMoreData} type='primary'>Get More Data</Button>
+              }
+              <label htmlForm="search">Search by name </label>
+              <input type="text" value={this.state.searchInput} onChange={this.handleInput}></input>
+            </Space>}
+            footer={<Space>
+              <Button onClick={this.goToFavorites} type='primary'>Favorites</Button>
+              {this.state.isLoading
+                ? <Button type='primary' loading>Loading Data</Button>
+                : <Button onClick={this.getMoreData} type='primary'>Get More Data</Button>
+              }
+            </Space>}
+            bordered
+            dataSource={data.filter(character => {
+              return character.name.toLowerCase().includes(this.state.searchInput.toLowerCase())
+            })}
+            renderItem={item => {
+              const foundIndex = selectedData.findIndex(element => element.id === item.id)
 
-              <List.Item.Meta
-                // avatar={<Avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" />}
-                avatar={<Avatar src={item.thumbnail} />}
-                title={item.name}
-                description={item.description}
+              return <List.Item
+                key={item.id}
+                actions={[
+                  <SmileOutlined style={{ color: foundIndex > -1 ? 'red' : 'black' }} />
+                ]}
+                onClick={(event) => this.handleIconClick(event, item)}>
 
-              >
+                <List.Item.Meta
+                  avatar={<Avatar size="large" src={item.thumbnail} />}
+                  title={item.name}
+                  description={item.description}
+                >
 
-              </List.Item.Meta>
+                </List.Item.Meta>
 
-            </List.Item>
-          }
-          }
-        />
-      </>
+              </List.Item>
+            }
+            }
+          />
+
+        </Content>
+        <Footer>
+          <BackTop>
+            <div style={style}>Up</div>
+          </BackTop>
+        </Footer>
+      </Layout>
     );
   }
 }

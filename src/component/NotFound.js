@@ -1,5 +1,6 @@
 import React from 'react'
+import { Result } from 'antd'
 
-const NotFound = () => <h2 className='notFound'>Y'a rien ici!</h2>
+const NotFound = () => <Result status="warning" title="Sorry, there's nothing here!" />
 
 export default NotFound

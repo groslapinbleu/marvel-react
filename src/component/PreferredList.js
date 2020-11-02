@@ -15,7 +15,7 @@ const PreferredList = () => {
                     size="small"
                     bordered
                     dataSource={selectedData}
-                    renderItem={item => <List.Item><Popover content={<Avatar src={item.thumbnail}/>} title={item.description} trigger="hover">{item.name}</Popover></List.Item>}
+                    renderItem={item => <List.Item><Popover content={<Avatar size="large" src={item.thumbnail}/>} title={item.description} trigger="hover">{item.name}</Popover></List.Item>}
                 />
         </>
     );
